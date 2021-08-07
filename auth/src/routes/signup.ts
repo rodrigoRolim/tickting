@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
-import{ body, validationResult } from 'express-validator';
+import{ body } from 'express-validator';
 import jwt from 'jsonwebtoken';
 
+import { validateRequest } from '../middlewares/validate-request';
 import { User } from '../models/user';
-import { RequestValidationError } from '../errors/request-validations-error';
 import { BadRequestError } from '../errors/bad-resquest-error';
 const router = express.Router();
 
@@ -15,14 +15,10 @@ router.post('/api/users/signup', [
       .trim()
       .isLength({ min: 4, max: 20 })
       .withMessage('Password must between and 20 characters')
-  ], async (req: Request, res: Response) => {
+  ],
+  validateRequest,
+  async (req: Request, res: Response) => {
   
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    throw new RequestValidationError(errors.array());
-  }
-
   const { email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
